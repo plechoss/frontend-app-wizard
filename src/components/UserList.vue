@@ -8,8 +8,6 @@
         <v-btn to="/user" icon>
           <v-icon> mdi-refresh </v-icon>
         </v-btn>
-        {{ selectedPage }}
-        {{ typeof selectedPage }}
       </v-col>
     </v-row>
     <v-row>
@@ -90,13 +88,19 @@
           color="#1e9067"
           class="page-selector-button-group"
         >
-          <v-btn @click="decreasePage" :class="selectedPage == 1 ? 'disabled' : ''">
+          <v-btn
+            @click="decreasePage"
+            :class="selectedPage == 1 ? 'disabled' : ''"
+          >
             <v-icon> mdi-chevron-double-left </v-icon>
           </v-btn>
           <v-btn v-for="index in maxPageNum" :key="index">
             {{ index }}
           </v-btn>
-          <v-btn @click="increasePage" :class="selectedPage == maxPageNum ? 'disabled' : ''">
+          <v-btn
+            @click="increasePage"
+            :class="selectedPage == maxPageNum ? 'disabled' : ''"
+          >
             <v-icon> mdi-chevron-double-right </v-icon>
           </v-btn>
         </v-btn-toggle>
@@ -275,10 +279,10 @@ export default {
 
   methods: {
     decreasePage() {
-      this.selectedPage -= 1;
+      if (this.selectedPage > 0) this.selectedPage -= 1;
     },
     increasePage() {
-      this.selectedPage += 1;
+      if (this.selectedPage < this.maxPageNum) this.selectedPage += 1;
     },
     onAddItem() {
       console.log("onAddItem");
@@ -313,8 +317,19 @@ export default {
   background-color: #ffffff !important;
 }
 
+.page-selector-button-group >>> span {
+  color: #1e9067 !important;
+}
+.page-selector-button-group >>> .v-btn--active {
+  background-color: #1e9067 !important;
+}
+.page-selector-button-group >>> .v-btn--active > span {
+  color: #ffffff !important;
+}
 .page-selector-button-group .disabled i {
-  background-color: #ffffff !important;
   color: #aaaaaa !important;
+}
+.page-selector-button-group button.disabled {
+  pointer-events: none !important;
 }
 </style>
