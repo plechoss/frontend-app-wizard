@@ -1,13 +1,9 @@
 <template>
   <v-container class="pt-8">
+    <!-- List of users -->
     <v-row>
       <v-col>
         <span class="text-h4"> User list </span>
-      </v-col>
-      <v-col>
-        <v-btn to="/user" icon>
-          <v-icon> mdi-refresh </v-icon>
-        </v-btn>
       </v-col>
     </v-row>
     <v-row>
@@ -64,6 +60,7 @@
                     >
                       mdi-square-edit-outline
                     </v-icon>
+
                     <v-icon
                       class="mr-2"
                       color="buttonColor"
@@ -87,6 +84,7 @@
           v-model="selectedPage"
           color="#1e9067"
           class="page-selector-button-group"
+          mandatory
         >
           <v-btn
             @click="decreasePage"
@@ -94,12 +92,12 @@
           >
             <v-icon> mdi-chevron-double-left </v-icon>
           </v-btn>
-          <v-btn v-for="index in maxPageNum" :key="index">
+          <v-btn v-for="index in getMaxPageNum" :key="index">
             {{ index }}
           </v-btn>
           <v-btn
             @click="increasePage"
-            :class="selectedPage == maxPageNum ? 'disabled' : ''"
+            :class="selectedPage == getMaxPageNum ? 'disabled' : ''"
           >
             <v-icon> mdi-chevron-double-right </v-icon>
           </v-btn>
@@ -110,18 +108,18 @@
 </template>
 
 <script>
+import apiConnector from "../apiConnector";
+import _ from "lodash";
+import { mapActions, mapGetters } from "vuex";
+
 export default {
   name: "UserList",
-
+  async mounted() {
+    await this.refreshUserList(this.selectedPage);
+  },
   data: () => ({
     buttonColor: "#757575",
-    maxPageNum: 10,
-    selectedPageHelper: 1,
-    tableHeaders: [
-      { align: "start", text: "", value: "avatar", width: 100 },
-      { align: "start", text: "Full Name", value: "full_name" },
-      { align: "start", text: "Action", value: "actions", width: 100 },
-    ],
+    modalWidth: 500,
     rawData: [
       {
         first_name: "Michal",
@@ -250,26 +248,32 @@ export default {
           "https://avatars.githubusercontent.com/u/12537090?s=400&u=c1eb9ae416d9edcee29422e6868b039cb210f40b&v=4",
       },
     ],
+    selectedPageHelper: 1,
+    tableHeaders: [
+      { align: "start", text: "", value: "avatar", width: 100 },
+      { align: "start", text: "Full Name", value: "full_name" },
+      { align: "start", text: "Action", value: "actions", width: 100 },
+    ],
     search: "",
   }),
 
   computed: {
+    ...mapGetters(["getMaxPageNum", "getUsers"]),
     selectedPage: {
       get() {
         return this.selectedPageHelper;
       },
       set(index) {
-        if (index > 0 && index <= this.maxPageNum)
+        if (index > 0 && index <= this.getMaxPageNum)
           this.selectedPageHelper = index;
       },
     },
     tableData() {
       let lowercaseSearchTerm = this.search.toLowerCase();
-      return this.rawData
+      return this.getUsers
         .map((user) => ({
-          avatar: user.avatar,
+          ...user,
           full_name: `${user.first_name} ${user.last_name}`,
-          id: user.id,
         }))
         .filter((user) =>
           user.full_name.toLowerCase().includes(lowercaseSearchTerm)
@@ -278,21 +282,34 @@ export default {
   },
 
   methods: {
-    decreasePage() {
-      if (this.selectedPage > 0) this.selectedPage -= 1;
+    ...mapActions(["refreshUserList"]),
+    async decreasePage() {
+      if (this.selectedPage > 0) {
+        this.selectedPage -= 1;
+      }
     },
-    increasePage() {
-      if (this.selectedPage < this.maxPageNum) this.selectedPage += 1;
+    async increasePage() {
+      if (this.selectedPage < this.getMaxPageNum) {
+        this.selectedPage += 1;
+      }
     },
     onAddItem() {
-      console.log("onAddItem");
+      this.$emit("add-user");
     },
-    onDeleteItem(item) {
-      console.log(item);
+    async onDeleteItem(item) {
+      const confirmation = confirm("Do you want to delete this user?");
+      if (!confirmation) return;
+      await apiConnector.deleteUser(item.id);
+      await this.refreshUserList(this.selectedPage);
     },
     onEditItem(item) {
-      console.log(item);
+      this.$emit("edit-user", item);
     },
+  },
+  watch: {
+    selectedPage: _.debounce(async function () {
+      await this.refreshUserList(this.selectedPage);
+    }, 50),
   },
 };
 </script>
@@ -311,6 +328,9 @@ export default {
 .v-data-table >>> td,
 .v-data-table >>> th {
   border: none !important;
+}
+.page-selector-button-group {
+  overflow-x: auto !important;
 }
 
 .page-selector-button-group button {
