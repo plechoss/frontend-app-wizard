@@ -50,11 +50,7 @@
           <v-card-actions>
             <v-row class="pa-2">
               <v-col cols="2">
-                <v-btn
-                  @click="onSubmit"
-                  color="custom-green"
-                  dark
-                >
+                <v-btn @click="onSubmit" color="custom-green" dark>
                   {{ saveBtnText }}
                 </v-btn>
               </v-col>
@@ -207,25 +203,30 @@ export default {
       let res;
       let message;
       let successful = false;
-
-      if (this.isEdit) {
-        res = await apiConnector.editUser(user.id, user);
-        if (res.status == 200) {
-          message = "Edit successful";
-          successful = true;
+      try {
+        if (this.isEdit) {
+          res = await apiConnector.editUser(user.id, user);
+          if (res.status == 200) {
+            message = "Edit successful";
+            successful = true;
+          } else {
+            message = "Edit failed";
+          }
         } else {
-          message = "Edit failed";
+          res = await apiConnector.addUser(user);
+          if (res.status == 201) {
+            message = "Adding successful";
+            successful = true;
+          } else {
+            message = "Adding failed";
+          }
         }
-      } else {
-        res = await apiConnector.addUser(user);
-        if (res.status == 201) {
-          message = "Adding successful";
-          successful = true;
-        } else {
-          message = "Adding failed";
-        }
+      } catch (e) {
+        successful = false;
+        message = `Error: ${e.message}`;
+      } finally {
+        this.$emit("action-complete", { message, successful });
       }
-      this.$emit("action-complete", { message, successful });
     },
   },
 };
