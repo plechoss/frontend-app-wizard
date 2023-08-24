@@ -85,10 +85,12 @@
           color="#1e9067"
           class="page-selector-button-group"
           mandatory
+          :key="getMaxPageNum"
         >
           <v-btn
             @click="decreasePage"
             :class="selectedPage == 1 ? 'disabled' : ''"
+            key="previous"
           >
             <v-icon> mdi-chevron-double-left </v-icon>
           </v-btn>
@@ -98,6 +100,7 @@
           <v-btn
             @click="increasePage"
             :class="selectedPage == getMaxPageNum ? 'disabled' : ''"
+            key="next"
           >
             <v-icon> mdi-chevron-double-right </v-icon>
           </v-btn>
@@ -264,6 +267,7 @@ export default {
         return this.selectedPageHelper;
       },
       set(index) {
+        console.log(`Trying to set index ${index}`);
         if (index > 0 && index <= this.getMaxPageNum)
           this.selectedPageHelper = index;
       },
