@@ -14,16 +14,16 @@
               <v-col cols="12" md="6" lg="6" xl="6" align-self="center">
                 <v-row>
                   <v-col cols="12" class="pb-0 mb-0">
-                    <span text-caption class="font-weight-bold black--text">
+                    <span class="font-weight-bold black--text" text-caption>
                       First Name
                     </span>
                   </v-col>
                   <v-col cols="12" class="pt-0 mt-0">
                     <v-text-field
                       v-model="firstNameInput"
+                      hide-details
                       outlined
                       solo
-                      hide-details
                     ></v-text-field>
                   </v-col>
                 </v-row>
@@ -31,16 +31,16 @@
               <v-col cols="12" md="6" lg="6" xl="6" align-self="center">
                 <v-row>
                   <v-col cols="12" class="pb-0 mb-0">
-                    <span text-caption class="font-weight-bold black--text">
+                    <span class="font-weight-bold black--text" text-caption>
                       Last Name
                     </span>
                   </v-col>
                   <v-col cols="12" class="pt-0 mt-0">
                     <v-text-field
                       v-model="lastNameInput"
+                      hide-details
                       outlined
                       solo
-                      hide-details
                     ></v-text-field>
                   </v-col>
                 </v-row>
@@ -49,10 +49,17 @@
           </v-card-text>
           <v-card-actions>
             <v-row class="pa-2">
-              <v-col cols="12">
-                <v-btn @click="onSubmit" color="#1e9067" dark>
+              <v-col cols="2">
+                <v-btn
+                  @click="onSubmit"
+                  color="custom-green"
+                  dark
+                >
                   {{ saveBtnText }}
                 </v-btn>
+              </v-col>
+              <v-col cols="10">
+                <v-btn @click="onCancel" text> Cancel </v-btn>
               </v-col>
             </v-row>
           </v-card-actions>
@@ -66,7 +73,7 @@
             <v-row class="text-center fill-height">
               <v-col cols="12" align-self="center">
                 <v-avatar :size="avatarSize">
-                  <v-img :src="imgSrc"></v-img>
+                  <v-img :src="imgDisplaySrc"></v-img>
                 </v-avatar>
               </v-col>
             </v-row>
@@ -74,7 +81,7 @@
           <v-card-actions>
             <v-row class="pa-2">
               <v-col cols="12">
-                <v-dialog v-model="dialog" persistent :max-width="modalWidth">
+                <v-dialog v-model="dialog" :max-width="modalWidth" persistent>
                   <template v-slot:activator="{ on, attrs }">
                     <v-btn
                       block
@@ -93,22 +100,22 @@
                     <v-card-text>
                       <v-text-field
                         v-model="inputNewImgSrc"
+                        hide-details
                         outlined
                         solo
-                        hide-details
                       >
                       </v-text-field>
                     </v-card-text>
                     <v-card-actions>
                       <v-spacer></v-spacer>
-                      <v-btn color="grey darken-1" text @click="onImgUrlCancel">
+                      <v-btn @click="onImgUrlCancel" color="grey darken-1" text>
                         Cancel
                       </v-btn>
                       <v-btn
-                        color="green darken-1"
-                        text
                         @click="onImgUrlSave"
+                        color="green darken-1"
                         :disabled="!inputNewImgSrc"
+                        text
                       >
                         Save
                       </v-btn>
@@ -138,49 +145,61 @@ export default {
     },
   },
 
-  mounted() {
-    this.imgSrcInput = _.get(this.userData, "avatar", "");
-    this.firstNameInput = _.get(this.userData, "first_name", "");
-    this.lastNameInput = _.get(this.userData, "last_name", "");
-  },
-
   data: () => ({
     avatarSize: "140",
     cardHeight: "300px",
     dialog: false,
     firstNameInput: "",
-    imgSrcDefault: require("../assets/default_avatar.png"),
-    imgSrcInput: "",
+    imgCurrentSrcInput: "",
+    imgDefaultSrc: require("../assets/default_avatar.png"),
     inputNewImgSrc: "",
     lastNameInput: "",
     modalWidth: 500,
   }),
 
   computed: {
-    imgSrc() {
-      return this.imgSrcInput || this.imgSrcDefault;
+    imgDisplaySrc() {
+      return this.imgCurrentSrcInput || this.imgDefaultSrc;
     },
+
     isEdit() {
       return !_.isEmpty(this.userData);
     },
+
     saveBtnText() {
       return this.isEdit ? "Update Details" : "Add User";
     },
+
     pageTitle() {
       return this.isEdit ? "Edit User" : "Add User";
     },
+
+    requiredValid() {
+      return !!this.lastNameInput && !!this.firstNameInput;
+    },
   },
+
+  mounted() {
+    this.imgCurrentSrcInput = _.get(this.userData, "avatar", "");
+    this.firstNameInput = _.get(this.userData, "first_name", "");
+    this.lastNameInput = _.get(this.userData, "last_name", "");
+  },
+
   methods: {
     onImgUrlSave() {
-      this.imgSrcInput = this.inputNewImgSrc;
+      this.imgCurrentSrcInput = this.inputNewImgSrc;
       this.dialog = false;
     },
+
     onImgUrlCancel() {
       this.dialog = false;
     },
+    onCancel() {
+      this.$emit("action-complete", { message: null, successful: false });
+    },
     async onSubmit() {
       let user = {
-        avatar: this.imgSrcInput,
+        avatar: this.imgCurrentSrcInput,
         first_name: this.firstNameInput,
         last_name: this.lastNameInput,
       };

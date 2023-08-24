@@ -13,7 +13,6 @@ const state = {
 const actions = {
   async refreshUserList({ commit }, pageNum) {
     const res = await apiConnector.getUsers(pageNum);
-    console.log({ res })
     commit('SET_USERS', res.data.data);
     commit('SET_MAX_PAGE_NUM', res.data.total_pages)
   }
