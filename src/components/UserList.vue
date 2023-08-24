@@ -16,19 +16,19 @@
               <v-col cols="6" md="4" lg="4" xl="4" align-self="center">
                 <v-text-field
                   v-model="search"
+                  append-icon="mdi-magnify"
                   background-color="custom-background"
-                  solo
-                  flat
                   dense
+                  flat
                   hide-details
                   placeholder="Search for users..."
-                  append-icon="mdi-magnify"
+                  solo
                 >
                 </v-text-field>
               </v-col>
               <v-spacer></v-spacer>
               <v-col class="text-right">
-                <v-btn color="custom-green" dark rounded @click="onAddItem">
+                <v-btn @click="onAddItem" color="custom-green" dark rounded>
                   <v-icon dark> mdi-plus </v-icon>
                   Add User
                 </v-btn>
@@ -38,11 +38,11 @@
             <v-row>
               <v-col>
                 <v-data-table
-                  :items="tableData"
-                  :headers="tableHeaders"
-                  item-key="id"
                   disable-sort
+                  :headers="tableHeaders"
                   hide-default-footer
+                  :items="tableData"
+                  item-key="id"
                 >
                   <!-- Avatar -->
                   <template #[`item.avatar`]="{ item }">
@@ -53,19 +53,19 @@
                   <!-- Action buttons -->
                   <template #[`item.actions`]="{ item }">
                     <v-icon
+                      @click="onEditItem(item)"
                       class="mr-2"
                       color="buttonColor"
                       small
-                      @click="onEditItem(item)"
                     >
                       mdi-square-edit-outline
                     </v-icon>
 
                     <v-icon
+                      @click="onDeleteItem(item)"
                       class="mr-2"
                       color="buttonColor"
                       small
-                      @click="onDeleteItem(item)"
                     >
                       mdi-delete
                     </v-icon>
@@ -84,8 +84,8 @@
           v-model="selectedPage"
           color="custom-green"
           class="page-selector-button-group"
-          mandatory
           :key="getMaxPageNum"
+          mandatory
         >
           <v-btn
             @click="decreasePage"
